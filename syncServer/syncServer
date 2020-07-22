@@ -1,0 +1,50 @@
+#! /bin/bash
+
+#file script name is : syncServer
+#description:
+#creation date Sat 27 Jun 23:53:43 CET 2020
+#Created by: omw
+
+#function do sync
+sync(){
+       var=''
+       n=1
+
+       while [[ $(echo "$3" | cut -d ' ' -f $n) ]];do
+            var+="--exclude=$(echo "$3" | cut -d ' ' -f $n) "
+            let "n=n+1"
+       done
+
+      rsync -ahvp $1 $2 $var
+}
+
+#ask if the user want to deploy or import
+while [[ -z $mode ]] || [  "$mode" != "d" -a "$mode" != "i" ]
+do
+read -p "Do you want to deploy or import ? (d/i): " mode;
+done
+
+#ask for the local dir ,remote server and dir to sync
+#and check if the local dir exist
+while [[ -z $localdir ]] || [[ ! -e $localdir ]] || [[ -z $remotedir ]] || [[ -z $remoteServer ]]
+do
+  read -p "enter the path of your local directory :" localdir;
+  read -p "enter the remote server (example@0.0.0.0) :" remoteServer;
+  read -p "enter the path of the remote directory :" remotedir;
+  read -p "enter the files to exclude :" toexclude;
+
+done
+
+#write the remote dir to ssh as: example@0.0.0.0:/dir/location
+remote=${remoteServer}:${remotedir}
+
+
+case $mode in
+           "d")
+               sync "$localdir" "$remote" "$toexclude "
+             ;;
+
+            "i")
+               sync "$remote" "$localdir" "$toexclude "
+              ;;
+esac

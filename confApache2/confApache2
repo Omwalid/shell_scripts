@@ -1,0 +1,65 @@
+
+#! /bin/bash
+
+#file script name is : confApache2
+#description: configure an Apache server
+#creation date Thu 25 Jun 19:48:00 CET 2020
+#Created by: omw
+
+#check if Apache2 is activated              
+apacheStatus=`service apache2 status | grep 'Active' | awk '{ print $2  }'`
+if [[ ! $apacheStatus = 'active'  ]];then
+echo "start apache2"
+fi
+
+#cd to www that contains all my websites directories
+#each website directory contains all the website code
+cd /home/omw/www
+
+#ask for the domaine name of your website & website email ServerName
+#ask for the absolute path to the website directory in www
+while [[ -z $domaineWebSite ]] ||  [[ -z $pathWebSite  ]] || [[ ! -e $pathWebSite ]]
+do 
+read -p 'enter the domaine name of your website (example.com): ' domaineWebSite;
+read -p 'enter the absolute path of the directory of your website: ' pathWebSite;
+read -p 'enter contact email "ServerAdmin": ' email;
+done 
+
+
+#get name without .com
+nameWebSite=`echo "$domaineWebSite" | cut -d . -f 1 `
+
+#cd to /var/www & create a symbolic link towards the website directory in www
+cd /var/www
+sudo ln -s $pathWebSite $domaineWebSite
+
+#create a dir that contains error and access logs files
+mkdir /home/omw/${nameWebSite}Logs
+touch /home/omw/${nameWebSite}Logs/error.log
+touch /home/omw/${nameWebSite}Logs/access.log
+
+#create a VirtualiHost
+sudo touch /etc/apache2/sites-available/001-${nameWebSite}.conf
+echo "
+<VirtualHost *:80>
+        ServerName $domaineWebSite
+        ServerAdmin $email
+        ServerAlias
+       
+        DocumentRoot /var/www/$domaineWebSite
+       
+        ErrorLog /home/omw/${nameWebSite}Logs/error.log 
+        CustomLog /home/omw/${nameWebSite}Logs/access.log combined 
+       
+        <directory /var/www/$domaineWebSite>
+             Options -Indexes
+        </directory>
+</VirtualHost>
+" | sudo tee /etc/apache2/sites-available/001-${nameWebSite}.conf >> /dev/null 2>&1
+
+#disable the default site & enable our website
+sudo a2dissite 000-default.conf
+sudo a2ensite 001-${nameWebSite}.conf
+
+#reload apache2
+sudo service apache2 reload

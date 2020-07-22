@@ -1,0 +1,56 @@
+#! /bin/bash
+
+#Enter the directory concerned
+while [[ -z  $direc  ]] || [[ ! -e $direc ]] || [[ ! -d $direc ]]
+do
+read -p 'enter the path of the directory to list: ' direc;
+done
+
+#select type of search
+while true
+  do
+    echo "slect the type:"
+    select type in  file directory link all
+       do
+         case $type in
+              file)
+                   cd $direc
+                   for file in `ls`
+                       do
+                          if [[ -f $file  ]]
+                            then  echo "$file"
+                          fi
+                       done
+                   exit 1
+               ;;
+
+              directory)
+                    cd $direc
+                    for dir in `ls`
+                       do
+                          if [[ -d $dir  ]]
+                            then  echo "$dir"
+                          fi
+                       done
+                     exit 2
+               ;;
+
+              link)
+                   cd $direc
+                   for link in `ls`
+                       do
+                          if [[ -L $link  ]]
+                            then  echo "$link"
+                          fi
+                       done
+                    exit 3
+               ;;
+              *)
+                cd $direc;
+                ls --color=auto;
+                exit 4
+               ;;
+          esac
+        done
+  done
+

@@ -1,0 +1,23 @@
+#! /bin/bash
+
+cd /home/omw/MyScripts
+
+
+while true;
+do
+  read -p 'enter the file script name :' filename;
+  if [[ ! -e $filename ]]
+    then
+        touch $filename
+        echo "
+#! /bin/bash
+
+#file script name is : $filename
+#description:
+#creation date `date`
+#Created by: $USER
+             " >> $filename
+         chmod +x $filename
+         exit 0
+  fi
+done

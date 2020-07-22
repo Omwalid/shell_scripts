@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ -z $1 ]] || [[ -z $2 ]]
+then
+     echo "Erreur!! entrez l'alias et la commande";
+else
+if [[ $1='-v' ]] && [[ ! -z $3  ]]
+then
+     echo "l'alias est: $2";
+     echo "la commande est: $3";
+     echo "alias $2='$3'" >> './.bashrc' ;
+else
+     echo "alias $1='$2'" >> './.bashrc' ;
+fi
+fi
